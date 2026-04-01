@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Vehicle Entry – ParkEase{% endblock %}
+{% block page_title %}Vehicle Entry{% endblock %}
+
+{% block content %}
+<div class="form-page-grid">
+  <div class="section-card form-card">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-car-side"></i> Register Vehicle Entry</h2>
+    </div>
+    <form method="POST" action="{{ url_for('vehicle_entry') }}" id="entry-form">
+      <div class="form-group">
+        <label for="license_plate" class="form-label">License Plate <span class="required">*</span></label>
+        <input type="text" id="license_plate" name="license_plate" class="form-control" placeholder="e.g. MH12AB1234" required autocomplete="off" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="vehicle_type" class="form-label">Vehicle Type</label>
+          <select id="vehicle_type" name="vehicle_type" class="form-control">
+            <option value="car">🚗 Car</option>
+            <option value="bike">🏍️ Bike</option>
+            <option value="truck">🚛 Truck</option>
+            <option value="suv">🚙 SUV</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="slot_id" class="form-label">Parking Slot <span class="required">*</span></label>
+          <select id="slot_id" name="slot_id" class="form-control" required>
+            <option value="">-- Select Slot --</option>
+            {% for slot in available_slots %}
+            <option value="{{ slot.id }}">{{ slot.slot_number }} ({{ slot.slot_type | capitalize }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="owner_name" class="form-label">Owner Name</label>
+          <input type="text" id="owner_name" name="owner_name" class="form-control" placeholder="Full name (optional)" />
+        </div>
+        <div class="form-group">
+          <label for="phone" class="form-label">Phone Number</label>
+          <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91 9000000000 (optional)" />
+        </div>
+      </div>
+
+      <div class="entry-time-display">
+        <i class="fas fa-clock"></i>
+        Entry Time: <strong id="entry-time-live"></strong>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg" id="submit-entry">
+          <i class="fas fa-arrow-right-to-bracket"></i> Park Vehicle
+        </button>
+        <a href="{{ url_for('parking') }}" class="btn btn-secondary btn-lg">
+          <i class="fas fa-grid"></i> View Grid
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Available Slots Panel -->
+  <div class="section-card">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-list-check"></i> Available Slots ({{ available_slots | length }})</h2>
+    </div>
+    <div class="avail-slot-list">
+      {% for slot in available_slots %}
+      <div class="avail-slot-item slot-type-{{ slot.slot_type }}" onclick="document.getElementById('slot_id').value='{{ slot.id }}'">
+        <div class="avail-slot-icon">
+          {% if slot.slot_type == 'vip' %}<i class="fas fa-star"></i>
+          {% elif slot.slot_type == 'handicap' %}<i class="fas fa-wheelchair"></i>
+          {% else %}<i class="fas fa-square-parking"></i>{% endif %}
+        </div>
+        <div>
+          <div class="avail-slot-num">{{ slot.slot_number }}</div>
+          <div class="avail-slot-type">{{ slot.slot_type | capitalize }}</div>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-ban"></i>
+        <p>No available slots!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function updateClock() {
+    const el = document.getElementById('entry-time-live');
+    if (el) el.textContent = new Date().toLocaleString('en-IN');
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+{% endblock %}

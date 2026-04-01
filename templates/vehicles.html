@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Vehicles – ParkEase{% endblock %}
+{% block page_title %}Vehicles{% endblock %}
+
+{% block content %}
+<div class="section-card">
+  <div class="card-header">
+    <h2 class="card-title"><i class="fas fa-list-ul"></i> Vehicle Records</h2>
+  </div>
+
+  <!-- Search & Filter -->
+  <form method="GET" action="{{ url_for('vehicles') }}" class="search-bar" id="search-form">
+    <div class="search-input-wrap">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" name="search" value="{{ search }}" placeholder="Search plate or owner..." class="form-control search-input" id="search-input" />
+    </div>
+    <select name="status" class="form-control status-select" id="status-filter" onchange="this.form.submit()">
+      <option value="all" {% if status == 'all' %}selected{% endif %}>All Vehicles</option>
+      <option value="active" {% if status == 'active' %}selected{% endif %}>Currently Parked</option>
+      <option value="exited" {% if status == 'exited' %}selected{% endif %}>Exited</option>
+    </select>
+    <button type="submit" class="btn btn-primary" id="btn-search"><i class="fas fa-search"></i> Search</button>
+    <a href="{{ url_for('vehicles') }}" class="btn btn-secondary" id="btn-clear"><i class="fas fa-xmark"></i> Clear</a>
+  </form>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table class="data-table" id="vehicles-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>License Plate</th>
+          <th>Type</th>
+          <th>Owner</th>
+          <th>Slot</th>
+          <th>Entry Time</th>
+          <th>Exit Time</th>
+          <th>Duration</th>
+          <th>Fee</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vehicles_page.items %}
+        <tr>
+          <td>{{ loop.index + (vehicles_page.page - 1) * 15 }}</td>
+          <td><span class="plate-badge">{{ v.license_plate }}</span></td>
+          <td>
+            {% if v.vehicle_type == 'bike' %}<i class="fas fa-motorcycle"></i>
+            {% elif v.vehicle_type == 'truck' %}<i class="fas fa-truck"></i>
+            {% else %}<i class="fas fa-car-side"></i>{% endif %}
+            {{ v.vehicle_type | capitalize }}
+          </td>
+          <td>{{ v.owner_name or '–' }}</td>
+          <td><span class="slot-tag">{{ v.slot.slot_number }}</span></td>
+          <td>{{ v.entry_time.strftime('%d %b %Y, %H:%M') }}</td>
+          <td>{{ v.exit_time.strftime('%d %b %Y, %H:%M') if v.exit_time else '–' }}</td>
+          <td>{{ v.duration_hours() }}h</td>
+          <td>{% if v.fee_charged > 0 %}₹{{ v.fee_charged }}{% else %}–{% endif %}</td>
+          <td>
+            {% if v.is_active %}
+              <span class="badge badge-active">Active</span>
+            {% else %}
+              <span class="badge badge-exited">Exited</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('delete_vehicle', vid=v.id) }}" onsubmit="return confirm('Delete this record?')">
+              <button type="submit" class="btn-icon btn-danger-icon" title="Delete" id="del-{{ v.id }}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="11" class="text-center empty-row"><i class="fas fa-inbox"></i> No vehicles found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if vehicles_page.pages > 1 %}
+  <div class="pagination">
+    {% if vehicles_page.has_prev %}
+    <a href="{{ url_for('vehicles', page=vehicles_page.prev_num, search=search, status=status) }}" class="page-btn" id="prev-page">&laquo; Prev</a>
+    {% endif %}
+    {% for p in vehicles_page.iter_pages() %}
+      {% if p %}
+        <a href="{{ url_for('vehicles', page=p, search=search, status=status) }}" class="page-btn {% if p == vehicles_page.page %}active{% endif %}" id="page-{{ p }}">{{ p }}</a>
+      {% else %}
+        <span class="page-dots">…</span>
+      {% endif %}
+    {% endfor %}
+    {% if vehicles_page.has_next %}
+    <a href="{{ url_for('vehicles', page=vehicles_page.next_num, search=search, status=status) }}" class="page-btn" id="next-page">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

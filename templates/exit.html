@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Vehicle Exit – ParkEase{% endblock %}
+{% block page_title %}Vehicle Exit{% endblock %}
+
+{% block content %}
+<div class="form-page-grid">
+  <div class="section-card form-card">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-sign-out-alt"></i> Process Vehicle Exit</h2>
+    </div>
+    <form method="POST" action="{{ url_for('vehicle_exit') }}" id="exit-form">
+      <div class="form-group">
+        <label for="license_plate" class="form-label">License Plate <span class="required">*</span></label>
+        <input type="text" id="license_plate" name="license_plate" class="form-control" placeholder="e.g. MH12AB1234" required autocomplete="off" list="active-plates" />
+        <datalist id="active-plates">
+          {% for v in active_vehicles %}
+          <option value="{{ v.license_plate }}">{{ v.license_plate }} – Slot {{ v.slot.slot_number }}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-danger btn-lg" id="submit-exit">
+          <i class="fas fa-right-from-bracket"></i> Process Exit & Generate Bill
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Currently Parked -->
+  <div class="section-card">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-car"></i> Currently Parked ({{ active_vehicles | length }})</h2>
+    </div>
+    <div class="active-vehicle-list">
+      {% for v in active_vehicles %}
+      <div class="active-veh-item" onclick="document.getElementById('license_plate').value='{{ v.license_plate }}'">
+        <div class="veh-icon veh-{{ v.vehicle_type }}">
+          {% if v.vehicle_type == 'bike' %}<i class="fas fa-motorcycle"></i>
+          {% elif v.vehicle_type == 'truck' %}<i class="fas fa-truck"></i>
+          {% else %}<i class="fas fa-car-side"></i>{% endif %}
+        </div>
+        <div class="veh-info">
+          <div class="veh-plate">{{ v.license_plate }}</div>
+          <div class="veh-meta">Slot {{ v.slot.slot_number }} &bull; {{ v.entry_time.strftime('%d %b, %H:%M') }}</div>
+        </div>
+        <div class="veh-duration">
+          {{ v.duration_hours() | round(1) }}h
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="fas fa-parking"></i><p>No vehicles currently parked.</p></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

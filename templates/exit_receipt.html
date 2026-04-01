@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Exit Receipt – ParkEase{% endblock %}
+{% block page_title %}Parking Receipt{% endblock %}
+
+{% block content %}
+<div class="receipt-wrapper">
+  <div class="receipt-card">
+    <div class="receipt-header">
+      <div class="receipt-logo"><i class="fas fa-parking"></i></div>
+      <h2>ParkEase</h2>
+      <p>Official Parking Receipt</p>
+    </div>
+    <div class="receipt-body">
+      <div class="receipt-row">
+        <span>License Plate</span>
+        <strong>{{ vehicle.license_plate }}</strong>
+      </div>
+      <div class="receipt-row">
+        <span>Vehicle Type</span>
+        <strong>{{ vehicle.vehicle_type | capitalize }}</strong>
+      </div>
+      <div class="receipt-row">
+        <span>Parking Slot</span>
+        <strong>{{ vehicle.slot.slot_number }}</strong>
+      </div>
+      {% if vehicle.owner_name %}
+      <div class="receipt-row">
+        <span>Owner</span>
+        <strong>{{ vehicle.owner_name }}</strong>
+      </div>
+      {% endif %}
+      <hr class="receipt-divider" />
+      <div class="receipt-row">
+        <span>Entry Time</span>
+        <strong>{{ vehicle.entry_time.strftime('%d %b %Y, %H:%M:%S') }}</strong>
+      </div>
+      <div class="receipt-row">
+        <span>Exit Time</span>
+        <strong>{{ vehicle.exit_time.strftime('%d %b %Y, %H:%M:%S') }}</strong>
+      </div>
+      <div class="receipt-row">
+        <span>Duration</span>
+        <strong>{{ vehicle.duration_hours() }} hours</strong>
+      </div>
+      <hr class="receipt-divider" />
+      <div class="receipt-row receipt-total">
+        <span>Total Fee</span>
+        <strong class="fee-amount">₹{{ vehicle.fee_charged }}</strong>
+      </div>
+    </div>
+    <div class="receipt-footer">
+      <p>Thank you for parking with ParkEase!</p>
+      <div class="receipt-actions">
+        <button onclick="window.print()" class="btn btn-primary" id="btn-print">
+          <i class="fas fa-print"></i> Print Receipt
+        </button>
+        <a href="{{ url_for('vehicle_exit') }}" class="btn btn-secondary" id="btn-another">
+          <i class="fas fa-arrow-left"></i> Another Exit
+        </a>
+        <a href="{{ url_for('index') }}" class="btn btn-accent" id="btn-home">
+          <i class="fas fa-house"></i> Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

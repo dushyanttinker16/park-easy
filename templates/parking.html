@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Parking Grid – ParkEase{% endblock %}
+{% block page_title %}Parking Grid{% endblock %}
+
+{% block content %}
+<div class="section-card">
+  <div class="card-header">
+    <h2 class="card-title"><i class="fas fa-th-large"></i> Live Parking Grid</h2>
+    <div class="grid-legend">
+      <span><span class="legend-dot green"></span>Available</span>
+      <span><span class="legend-dot orange"></span>Occupied</span>
+      <span><span class="legend-dot blue"></span>VIP</span>
+      <span><span class="legend-dot purple"></span>Handicap</span>
+    </div>
+  </div>
+
+  <div class="parking-grid" id="parking-grid">
+    {% for slot in slots %}
+    <div class="parking-slot
+      {% if slot.is_occupied %}slot-occupied{% else %}slot-available{% endif %}
+      {% if slot.slot_type == 'vip' %}slot-vip{% elif slot.slot_type == 'handicap' %}slot-handicap{% endif %}"
+      id="slot-{{ slot.id }}"
+      data-slot="{{ slot.slot_number }}"
+      data-type="{{ slot.slot_type }}"
+      onclick="showSlotInfo({{ slot.to_dict() | tojson }})">
+      <div class="slot-icon">
+        {% if slot.slot_type == 'handicap' %}
+          <i class="fas fa-wheelchair"></i>
+        {% elif slot.slot_type == 'vip' %}
+          <i class="fas fa-star"></i>
+        {% elif slot.is_occupied %}
+          <i class="fas fa-car"></i>
+        {% else %}
+          <i class="fas fa-square-parking"></i>
+        {% endif %}
+      </div>
+      <div class="slot-number">{{ slot.slot_number }}</div>
+      {% if slot.is_occupied %}
+        <div class="slot-plate">{{ slot.vehicles | selectattr('is_active') | map(attribute='license_plate') | first | default('') }}</div>
+      {% else %}
+        <div class="slot-free-tag">Free</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Slot Info Modal -->
+<div class="modal-overlay" id="slotModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <h3 id="modal-title">Slot Information</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/parking.js') }}"></script>
+{% endblock %}

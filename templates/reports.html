@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Reports – ParkEase{% endblock %}
+{% block page_title %}Reports &amp; Analytics{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Summary Cards -->
+<div class="stats-grid">
+  <div class="stat-card stat-revenue">
+    <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value">₹{{ total_revenue }}</div>
+    </div>
+  </div>
+  <div class="stat-card stat-vehicles">
+    <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+    <div class="stat-info">
+      <div class="stat-label">Avg. Fee / Vehicle</div>
+      <div class="stat-value">₹{{ avg_fee }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="two-col-grid mt-4">
+  <!-- Daily Revenue Chart -->
+  <div class="section-card">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-chart-line"></i> Last 7 Days Revenue</h2>
+    </div>
+    <div class="chart-container">
+      <canvas id="revenueChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Vehicle Type Pie Chart -->
+  <div class="section-card">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-chart-pie"></i> Vehicle Type Breakdown</h2>
+    </div>
+    <div class="chart-container">
+      <canvas id="typeChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Daily Revenue Table -->
+<div class="section-card mt-4">
+  <div class="card-header">
+    <h2 class="card-title"><i class="fas fa-table"></i> Daily Revenue Breakdown</h2>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table" id="revenue-table">
+      <thead>
+        <tr><th>Date</th><th>Vehicles Served</th><th>Revenue</th></tr>
+      </thead>
+      <tbody>
+        {% for row in daily_revenue %}
+        <tr>
+          <td>{{ row.day }}</td>
+          <td>{{ row.count }}</td>
+          <td class="fee-col">₹{{ row.revenue | round(2) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="text-center empty-row">No revenue data yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const revenueLabels = {{ daily_revenue | map(attribute='day') | list | tojson }};
+  const revenueData   = {{ daily_revenue | map(attribute='revenue') | list | tojson }};
+  const typeLabels    = {{ type_breakdown | map(attribute=0) | list | tojson }};
+  const typeCounts    = {{ type_breakdown | map(attribute=1) | list | tojson }};
+
+  const chartDefaults = {
+    color: '#94a3b8',
+    borderColor: 'rgba(148,163,184,0.15)',
+    font: { family: 'Inter', size: 12 }
+  };
+  Chart.defaults.color = chartDefaults.color;
+  Chart.defaults.borderColor = chartDefaults.borderColor;
+  Chart.defaults.font.family = chartDefaults.font.family;
+
+  // Revenue Bar Chart
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+      labels: revenueLabels.reverse(),
+      datasets: [{
+        label: 'Revenue (₹)',
+        data: revenueData.reverse(),
+        backgroundColor: 'rgba(99,102,241,0.7)',
+        borderColor: '#6366f1',
+        borderWidth: 2,
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { callback: v => '₹' + v } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Type Doughnut Chart
+  new Chart(document.getElementById('typeChart'), {
+    type: 'doughnut',
+    data: {
+      labels: typeLabels,
+      datasets: [{
+        data: typeCounts,
+        backgroundColor: ['#6366f1','#f59e0b','#10b981','#ef4444'],
+        borderWidth: 0, hoverOffset: 10,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 20 } } },
+      cutout: '65%'
+    }
+  });
+</script>
+{% endblock %}

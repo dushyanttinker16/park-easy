@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}ParkEase – Parking Management{% endblock %}</title>
+  <meta name="description" content="ParkEase – Smart Parking Lot Management System for real-time slot tracking, vehicle entry/exit, and revenue reports." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fas fa-parking"></i></div>
+      <div class="brand-text">
+        <h1>ParkEase</h1>
+        <span>Management System</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}" id="nav-dashboard">
+        <i class="fas fa-gauge-high"></i><span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('parking') }}" class="nav-item {% if request.endpoint == 'parking' %}active{% endif %}" id="nav-parking">
+        <i class="fas fa-th-large"></i><span>Parking Grid</span>
+      </a>
+      <a href="{{ url_for('vehicle_entry') }}" class="nav-item {% if request.endpoint == 'vehicle_entry' %}active{% endif %}" id="nav-entry">
+        <i class="fas fa-car-side"></i><span>Vehicle Entry</span>
+      </a>
+      <a href="{{ url_for('vehicle_exit') }}" class="nav-item {% if request.endpoint == 'vehicle_exit' %}active{% endif %}" id="nav-exit">
+        <i class="fas fa-sign-out-alt"></i><span>Vehicle Exit</span>
+      </a>
+      <a href="{{ url_for('vehicles') }}" class="nav-item {% if request.endpoint == 'vehicles' %}active{% endif %}" id="nav-vehicles">
+        <i class="fas fa-list-ul"></i><span>Vehicles</span>
+      </a>
+      <a href="{{ url_for('history') }}" class="nav-item {% if request.endpoint == 'history' %}active{% endif %}" id="nav-history">
+        <i class="fas fa-clock-rotate-left"></i><span>History</span>
+      </a>
+      <a href="{{ url_for('reports') }}" class="nav-item {% if request.endpoint == 'reports' %}active{% endif %}" id="nav-reports">
+        <i class="fas fa-chart-bar"></i><span>Reports</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="current-time" id="clock"></div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+      <div class="topbar-actions">
+        <div class="live-badge"><span class="pulse-dot"></span>Live</div>
+        <a href="{{ url_for('vehicle_entry') }}" class="btn btn-primary btn-sm">
+          <i class="fas fa-plus"></i> New Entry
+        </a>
+      </div>
+    </header>
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert">
+              <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-info-circle{% endif %}"></i>
+              {{ message }}
+              <button class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Page Content -->
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

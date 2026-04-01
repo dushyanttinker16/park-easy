@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}History – ParkEase{% endblock %}
+{% block page_title %}Parking History{% endblock %}
+
+{% block content %}
+<div class="section-card">
+  <div class="card-header">
+    <h2 class="card-title"><i class="fas fa-clock-rotate-left"></i> Parking History</h2>
+    <span class="badge badge-secondary">{{ records.total }} records</span>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table" id="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>License Plate</th>
+          <th>Type</th>
+          <th>Owner</th>
+          <th>Slot</th>
+          <th>Entry</th>
+          <th>Exit</th>
+          <th>Duration</th>
+          <th>Fee Charged</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in records.items %}
+        <tr>
+          <td>{{ loop.index + (records.page - 1) * 20 }}</td>
+          <td><span class="plate-badge">{{ v.license_plate }}</span></td>
+          <td>{{ v.vehicle_type | capitalize }}</td>
+          <td>{{ v.owner_name or '–' }}</td>
+          <td><span class="slot-tag">{{ v.slot.slot_number }}</span></td>
+          <td>{{ v.entry_time.strftime('%d %b %Y %H:%M') }}</td>
+          <td>{{ v.exit_time.strftime('%d %b %Y %H:%M') if v.exit_time else '–' }}</td>
+          <td>{{ v.duration_hours() }}h</td>
+          <td class="fee-col">₹{{ v.fee_charged }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center empty-row"><i class="fas fa-inbox"></i> No history records yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if records.pages > 1 %}
+  <div class="pagination">
+    {% if records.has_prev %}
+    <a href="{{ url_for('history', page=records.prev_num) }}" class="page-btn" id="prev-page">&laquo; Prev</a>
+    {% endif %}
+    {% for p in records.iter_pages() %}
+      {% if p %}
+        <a href="{{ url_for('history', page=p) }}" class="page-btn {% if p == records.page %}active{% endif %}" id="hpage-{{ p }}">{{ p }}</a>
+      {% else %}
+        <span class="page-dots">…</span>
+      {% endif %}
+    {% endfor %}
+    {% if records.has_next %}
+    <a href="{{ url_for('history', page=records.next_num) }}" class="page-btn" id="next-page">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
